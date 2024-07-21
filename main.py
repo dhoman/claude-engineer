@@ -12,7 +12,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.markdown import Markdown
+from dotenv import load_dotenv
 
+# Load environment variables from the .env file
+load_dotenv()
 console = Console()
 
 # Add these constants at the top of the file
@@ -23,11 +26,18 @@ MAX_CONTINUATION_ITERATIONS = 25
 MAINMODEL = "claude-3-5-sonnet-20240620"
 TOOLCHECKERMODEL = "claude-3-5-sonnet-20240620"
 
+# load keys
+anthropic_key = os.getenv("ANTHROPIC_KEY")
+tavily_key = os.getenv("TAVILY_KEY")
+
+print(f"Anthropic Key: {anthropic_key}")
+print(f"Tavily Key: {tavily_key}")
+
 # Initialize the Anthropic client
-client = Anthropic(api_key="YOUR KEY")
+client = Anthropic(api_key=anthropic_key)
 
 # Initialize the Tavily client
-tavily = TavilyClient(api_key="YOUR KEY")
+tavily = TavilyClient(api_key=tavily_key)
 
 # Set up the conversation memory
 conversation_history = []
