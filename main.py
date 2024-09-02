@@ -18,6 +18,8 @@ import aiohttp
 from prompt_toolkit import PromptSession
 from prompt_toolkit.styles import Style
 import difflib
+import git
+import fnmatch
 
 async def get_user_input(prompt="You: "):
     style = Style.from_dict({
@@ -880,11 +882,32 @@ async def execute_tool(tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, 
             "console_output": None
         }
 
+def is_git_repo(path: str) -> bool:
+    try:
+        _ = git.Repo(path).git_dir
+        return True
+    except git.exc.InvalidGitRepositoryError:
+        return False
+
+def parse_gitignore(repo_path: str) -> list:
+    gitignore_path = os.path.join(repo_path, '.gitignore')
+    if not os.path.exists(gitignore_path):
+        return []
+    
+    with open(gitignore_path, 'r') as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+
+def should_ignore(path: str, ignore_patterns: list) -> bool:
+    return any(fnmatch.fnmatch(path, pattern) for pattern in ignore_patterns)
+
 def scan_folder(folder_path: str, output_file: str) -> str:
     ignored_folders = {'.git', '__pycache__', 'node_modules', 'venv', 'env'}
     markdown_content = f"# Folder Scan: {folder_path}\n\n"
     total_chars = len(markdown_content)
     max_chars = 600000  # Approximating 150,000 tokens
+
+    is_repo = is_git_repo(folder_path)
+    ignore_patterns = parse_gitignore(folder_path) if is_repo else []
 
     for root, dirs, files in os.walk(folder_path):
         dirs[:] = [d for d in dirs if d not in ignored_folders]
@@ -893,6 +916,9 @@ def scan_folder(folder_path: str, output_file: str) -> str:
             file_path = os.path.join(root, file)
             relative_path = os.path.relpath(file_path, folder_path)
             
+            if should_ignore(relative_path, ignore_patterns):
+                continue
+
             mime_type, _ = mimetypes.guess_type(file_path)
             if mime_type and mime_type.startswith('text'):
                 try:
