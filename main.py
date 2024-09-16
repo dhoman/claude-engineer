@@ -143,7 +143,7 @@ Available tools and their optimal use cases:
 6. read_multiple_files: Read the contents of one or more existing files at once. This tool now handles both single and multiple file reads. Use this when you need to examine or work with file contents.
 7. list_files: List all files and directories in a specified folder.
 8. tavily_search: Perform a web search using the Tavily API for up-to-date information.
-9. Scan project folders to turn them into an .md file for better context.
+9. scan_folder: Scan project folders to turn them into an .md file for better context.
 
 Tool Usage Guidelines:
 - Always use the most appropriate tool for the task at hand.
